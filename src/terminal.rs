@@ -42,7 +42,7 @@ impl Terminal {
     pub const fn new() -> Self {
         let row = 0;
         let column = 0;
-        let color = vga::entry_color(vga::Color::LightGray, vga::Color::Black);
+        let color = vga::entry_color(vga::Color::White, vga::Color::Blue);
         let buffer = 0xB8000 as *mut u16;
 
         Self {

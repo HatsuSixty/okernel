@@ -1,5 +1,8 @@
 use crate::o1heap::*;
-use core::{alloc::{GlobalAlloc, Layout}, ffi::c_void};
+use core::{
+    alloc::{GlobalAlloc, Layout},
+    ffi::c_void,
+};
 
 #[allow(improper_ctypes)]
 extern "C" {
@@ -35,10 +38,15 @@ impl Allocator {
         };
 
         let mut kernel_end_addr = unsafe { (&KERNEL_END as *const ()) as u32 };
+        let kernel_start_addr = unsafe { (&KERNEL_START as *const ()) as u32 };
+        let reserved_memory_length = (kernel_end_addr - kernel_start_addr) as usize;
+        let segment_size = big_chunk.len as usize - reserved_memory_length;
+
         let aligment = core::mem::size_of::<*mut u8>() * 4 as usize;
         kernel_end_addr += aligment as u32 - (kernel_end_addr % aligment as u32);
 
-        let o1heap_instance = unsafe { o1heapInit(kernel_end_addr as *mut c_void, big_chunk.len as usize) };
+        let o1heap_instance =
+            unsafe { o1heapInit(kernel_end_addr as *mut c_void, segment_size) };
         if o1heap_instance.is_null() {
             panic!("Could not initialize memory allocator");
         }

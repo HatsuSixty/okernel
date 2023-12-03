@@ -30,7 +30,7 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
     unsafe { ALLOC.init(info) }
 
     let bootloader_name = info.get_bootloader_name();
-    println!("Booted from bootloader `{bootloader_name}`");
+    println!("[INI] Booted from bootloader `{bootloader_name}`");
 
     let mut mbrpartition = MbrPartition::default();
     open_disk(0, &mut mbrpartition as *mut MbrPartition);

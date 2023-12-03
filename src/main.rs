@@ -4,15 +4,15 @@
 extern crate alloc;
 
 mod allocator;
+mod cpu;
+mod drivers;
 mod kernelc;
 mod multiboot;
 mod o1heap;
 mod terminal;
 mod vga;
 
-use alloc::vec;
-
-use crate::{allocator::ALLOC, multiboot::MultibootInfo};
+use crate::{allocator::ALLOC, drivers::disk::{MbrPartition, open_disk, get_bytes}, multiboot::MultibootInfo};
 
 use core::{arch::global_asm, panic::PanicInfo};
 
@@ -32,12 +32,32 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
     let bootloader_name = info.get_bootloader_name();
     println!("Booted from bootloader `{bootloader_name}`");
 
-    let mut vec = vec![1, 2, 3, 4, 5, 6];
-    println!("{vec:?}");
-    for _ in 0..vec.len() {
-        println!("Popped number: {}", vec.pop().unwrap());
+    let mut mbrpartition = MbrPartition::default();
+    open_disk(0, &mut mbrpartition as *mut MbrPartition);
+
+    println!("MBR: {mbrpartition:?}\n");
+
+    let data: &mut [u8; 512] = &mut [0; 512];
+    get_bytes(data, 1, 1);
+
+    print!("First sector after MBR: ");
+    let mut last: i32 = -1;
+    for (i, x) in data.iter().enumerate() {
+        if i == 0 {
+            print!("[");
+        }
+        if *x as i32 == last {
+            print!(".");
+        } else {
+            print!("{x:#02X}");
+        }
+        if i == data.len()-1 {
+            println!("]");
+        } else {
+            print!(", ")
+        }
+        last = *x as i32;
     }
-    drop(vec);
 
     loop {}
 }

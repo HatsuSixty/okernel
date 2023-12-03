@@ -1,7 +1,4 @@
-use crate::{
-    cpu::{inportb, inportw, outportb},
-    print, println,
-};
+use crate::cpu::{inportb, inportw, outportb};
 
 const STATUS_BSY: u8 = 0x80;
 const STATUS_RDY: u8 = 0x40;
@@ -41,8 +38,6 @@ fn wait_drq() {
 }
 
 pub fn read_sectors_pio(target_addr: &mut [u8], lba: u32, sector_count: u8) {
-    println!("[ATA] Reading sectors from MASTER disk");
-    println!("    => If the system hangs, you may not have a MASTER disk attached");
     wait_bsy();
     // 0xE0 -> master, 0xF0 -> slave, 4 highest bits of LBA
     outportb(

@@ -4,7 +4,7 @@ const STATUS_BSY: u8 = 0x80;
 const STATUS_RDY: u8 = 0x40;
 
 const ATA_MASTER_BASE: u16 = 0x1F0;
-//const ATA_SLAVE_BASE: u16 = 0x170;
+const ATA_SLAVE_BASE: u16 = 0x170;
 
 const ATA_MASTER: u8 = 0xE0;
 const ATA_SLAVE: u8 = 0xF0;
@@ -50,25 +50,41 @@ pub enum DiskType {
     Slave,
 }
 
-pub fn read_sectors_pio(disk_type: DiskType, target_addr: &mut [u8], lba: u32, sector_count: u8) {
+#[derive(Clone, Copy, Debug)]
+pub enum ControllerType {
+    Master,
+    Slave,
+}
+
+pub fn read_sectors_pio(
+    disk_type: DiskType,
+    controller_type: ControllerType,
+    target_addr: &mut [u8],
+    lba: u32,
+    sector_count: u8,
+) {
     wait_bsy();
     // 0xE0 -> master, 0xF0 -> slave, 4 highest bits of LBA
     let disk = match disk_type {
         DiskType::Master => ATA_MASTER,
         DiskType::Slave => ATA_SLAVE,
     };
+    let controller = match controller_type {
+        ControllerType::Master => ATA_MASTER_BASE,
+        ControllerType::Slave => ATA_SLAVE_BASE,
+    };
     outportb(
-        ATA_MASTER_BASE + ATA_REG_HDDEVSEL as u16,
+        controller + ATA_REG_HDDEVSEL as u16,
         (disk as u32 | ((lba >> 24) & 0xF)) as u8,
     );
     // Send the amount of sectors we want
-    outportb(ATA_MASTER_BASE + ATA_REG_SECCOUNT0 as u16, sector_count);
+    outportb(controller + ATA_REG_SECCOUNT0 as u16, sector_count);
     // Send LBA, 8 bits at a time
-    outportb(ATA_MASTER_BASE + ATA_REG_LBA0 as u16, lba as u8);
-    outportb(ATA_MASTER_BASE + ATA_REG_LBA1 as u16, (lba >> 8) as u8);
-    outportb(ATA_MASTER_BASE + ATA_REG_LBA2 as u16, (lba >> 16) as u8);
+    outportb(controller + ATA_REG_LBA0 as u16, lba as u8);
+    outportb(controller + ATA_REG_LBA1 as u16, (lba >> 8) as u8);
+    outportb(controller + ATA_REG_LBA2 as u16, (lba >> 16) as u8);
     // Read
-    outportb(ATA_MASTER_BASE + ATA_REG_COMMAND as u16, 0x20);
+    outportb(controller + ATA_REG_COMMAND as u16, 0x20);
 
     let mut target = target_addr.as_mut_ptr() as *mut u16;
 

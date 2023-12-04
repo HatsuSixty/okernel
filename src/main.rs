@@ -12,7 +12,14 @@ mod o1heap;
 mod terminal;
 mod vga;
 
-use crate::{allocator::ALLOC, drivers::{ata::DiskType, disk::{MbrPartition, Disk}}, multiboot::MultibootInfo};
+use crate::{
+    allocator::ALLOC,
+    drivers::{
+        ata::{ControllerType, DiskType},
+        disk::{Disk, MbrPartition},
+    },
+    multiboot::MultibootInfo,
+};
 
 use core::{arch::global_asm, panic::PanicInfo};
 
@@ -32,7 +39,7 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
     let bootloader_name = info.get_bootloader_name();
     println!("[INI] Booted from bootloader `{bootloader_name}`");
 
-    let disk = Disk::new(DiskType::Master);
+    let disk = Disk::new(DiskType::Master, ControllerType::Master);
 
     let mut mbrpartition = MbrPartition::default();
     disk.get_mbr_partition(0, &mut mbrpartition as *mut MbrPartition);

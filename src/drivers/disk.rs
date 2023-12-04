@@ -33,7 +33,6 @@ pub fn get_bytes(target_addr: &mut [u8], lba: u32, sector_count: u8) {
 
 pub fn open_disk(partition: usize, out: *mut MbrPartition) {
     println!("[DIS] Reading sectors from MASTER disk");
-    println!("    => If the system hangs, you may not have a MASTER disk attached");
     let arr: &mut [u8] = &mut [0; SECTOR_SIZE];
     read_sectors_pio(arr, 0x0, 1);
     unsafe {

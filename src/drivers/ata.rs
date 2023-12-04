@@ -32,9 +32,16 @@ fn wait_bsy() {
     while (inportb(0x1F7) & STATUS_BSY) != 0 {}
 }
 
+const MAX_WAIT_DRQ_ATTEMPTS: usize = 1000000;
 fn wait_drq() {
     // wait for DRQ to be 1
-    while (inportb(0x1F7) & STATUS_RDY) == 0 {}
+    let mut attempts = 0;
+    while (inportb(0x1F7) & STATUS_RDY) == 0 {
+        if attempts >= MAX_WAIT_DRQ_ATTEMPTS {
+            panic!("[ATA] wait_drq(): timed out");
+        }
+        attempts += 1;
+    }
 }
 
 pub fn read_sectors_pio(target_addr: &mut [u8], lba: u32, sector_count: u8) {

@@ -12,7 +12,11 @@ mod o1heap;
 mod terminal;
 mod vga;
 
-use crate::{allocator::ALLOC, drivers::disk::{MbrPartition, open_disk, get_bytes}, multiboot::MultibootInfo};
+use crate::{
+    allocator::ALLOC,
+    drivers::disk::{get_bytes, open_disk, MbrPartition},
+    multiboot::MultibootInfo,
+};
 
 use core::{arch::global_asm, panic::PanicInfo};
 

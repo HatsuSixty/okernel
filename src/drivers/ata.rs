@@ -44,6 +44,7 @@ fn wait_drq() {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum DiskType {
     Master,
     Slave,

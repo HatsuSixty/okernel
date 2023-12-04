@@ -27,16 +27,28 @@ pub struct MbrPartition {
     pub sector_count: u32,
 }
 
-pub fn get_bytes(disk_type: DiskType, target_addr: &mut [u8], lba: u32, sector_count: u8) {
-    read_sectors_pio(disk_type, target_addr, lba, sector_count)
+pub struct Disk {
+    pub typ: DiskType,
 }
 
-pub fn open_disk(disk_type: DiskType, partition: usize, out: *mut MbrPartition) {
-    println!("[DIS] Reading sectors from MASTER disk");
-    let arr: &mut [u8] = &mut [0; SECTOR_SIZE];
-    read_sectors_pio(disk_type, arr, 0x0, 1);
-    unsafe {
-        let partition_info_offset = MBR_PARTITION_INDEXES[partition];
-        *out = *(&arr[partition_info_offset] as *const u8 as *mut MbrPartition);
+impl Disk {
+    pub fn new(disk_type: DiskType) -> Self {
+        Self {
+            typ: disk_type
+        }
+    }
+
+    pub fn get_mbr_partition(&self, partition: usize, out: *mut MbrPartition) {
+        println!("[DIS] Getting MBR partition from disk {:?}", self.typ);
+        let arr: &mut [u8] = &mut [0; SECTOR_SIZE];
+        read_sectors_pio(self.typ, arr, 0x0, 1);
+        unsafe {
+            let partition_info_offset = MBR_PARTITION_INDEXES[partition];
+            *out = *(&arr[partition_info_offset] as *const u8 as *mut MbrPartition);
+        }
+    }
+
+    pub fn get_bytes(&self, target_addr: &mut [u8], lba: u32, sector_count: u8) {
+        read_sectors_pio(self.typ, target_addr, lba, sector_count);
     }
 }

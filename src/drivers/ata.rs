@@ -45,12 +45,14 @@ fn wait_drq() {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[allow(dead_code)]
 pub enum DiskType {
     Master,
     Slave,
 }
 
 #[derive(Clone, Copy, Debug)]
+#[allow(dead_code)]
 pub enum ControllerType {
     Master,
     Slave,

@@ -31,12 +31,12 @@ pub unsafe extern "C" fn memcpy(d: *mut u8, s: *const u8, n: usize) -> *mut u8 {
 
 #[no_mangle]
 pub unsafe extern "C" fn strlen(mut s: *const i8) -> usize {
-	let mut result = 0;
-	while *s != 0 {
-		s = s.offset(1);
-		result += 1;
-	}
-	result
+    let mut result = 0;
+    while *s != 0 {
+        s = s.offset(1);
+        result += 1;
+    }
+    result
 }
 
 #[no_mangle]

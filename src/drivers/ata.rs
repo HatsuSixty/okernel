@@ -7,7 +7,7 @@ const ATA_MASTER_BASE: u16 = 0x1F0;
 //const ATA_SLAVE_BASE: u16 = 0x170;
 
 const ATA_MASTER: u8 = 0xE0;
-//const ATA_SLAVE: u8 = 0xF0;
+const ATA_SLAVE: u8 = 0xF0;
 
 //const ATA_REG_DATA: u8 = 0x00;
 //const ATA_REG_ERROR: u8 = 0x01;
@@ -44,12 +44,21 @@ fn wait_drq() {
     }
 }
 
-pub fn read_sectors_pio(target_addr: &mut [u8], lba: u32, sector_count: u8) {
+pub enum DiskType {
+    Master,
+    Slave,
+}
+
+pub fn read_sectors_pio(disk_type: DiskType, target_addr: &mut [u8], lba: u32, sector_count: u8) {
     wait_bsy();
     // 0xE0 -> master, 0xF0 -> slave, 4 highest bits of LBA
+    let disk = match disk_type {
+        DiskType::Master => ATA_MASTER,
+        DiskType::Slave => ATA_SLAVE,
+    };
     outportb(
         ATA_MASTER_BASE + ATA_REG_HDDEVSEL as u16,
-        (ATA_MASTER as u32 | ((lba >> 24) & 0xF)) as u8,
+        (disk as u32 | ((lba >> 24) & 0xF)) as u8,
     );
     // Send the amount of sectors we want
     outportb(ATA_MASTER_BASE + ATA_REG_SECCOUNT0 as u16, sector_count);

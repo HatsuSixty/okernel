@@ -14,7 +14,10 @@ mod vga;
 
 use crate::{
     allocator::ALLOC,
-    drivers::disk::{get_bytes, open_disk, MbrPartition},
+    drivers::{
+        ata::DiskType,
+        disk::{get_bytes, open_disk, MbrPartition},
+    },
     multiboot::MultibootInfo,
 };
 
@@ -37,14 +40,19 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
     println!("[INI] Booted from bootloader `{bootloader_name}`");
 
     let mut mbrpartition = MbrPartition::default();
-    open_disk(0, &mut mbrpartition as *mut MbrPartition);
+    open_disk(DiskType::Master, 0, &mut mbrpartition as *mut MbrPartition);
 
     println!("MBR: {mbrpartition:?}\n");
 
-    let data: &mut [u8; 512] = &mut [0; 512];
-    get_bytes(data, 1, 1);
+    // This workaround is needed so the pointer `data` is correctly aligned
+    let mut data_u16: [u16; 512 / core::mem::size_of::<u16>()] =
+        [0; 512 / core::mem::size_of::<u16>()];
+    let data = unsafe {
+        core::slice::from_raw_parts_mut(data_u16.as_mut_ptr() as *mut u8, data_u16.len() * 2)
+    };
+    get_bytes(DiskType::Master, data, 1, 1);
 
-    println!("First 10 bytes after MBR: {:?}", &data[..10]);
+    println!("First 10 bytes after MBR: {:?}", &data_u16[..10]);
 
     loop {}
 }

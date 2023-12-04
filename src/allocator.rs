@@ -45,8 +45,7 @@ impl Allocator {
         let aligment = core::mem::size_of::<*mut u8>() * 4 as usize;
         kernel_end_addr += aligment as u32 - (kernel_end_addr % aligment as u32);
 
-        let o1heap_instance =
-            unsafe { o1heapInit(kernel_end_addr as *mut c_void, segment_size) };
+        let o1heap_instance = unsafe { o1heapInit(kernel_end_addr as *mut c_void, segment_size) };
         if o1heap_instance.is_null() {
             panic!("Could not initialize memory allocator");
         }

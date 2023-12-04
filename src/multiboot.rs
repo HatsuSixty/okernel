@@ -55,7 +55,13 @@ impl MultibootInfo {
     }
 
     pub fn get_mmap_entries(&self) -> &[MultibootMmapEntry] {
-        let num_mmap_entries = self.mmap_length as usize / core::mem::size_of::<MultibootMmapEntry>();
-        unsafe { core::slice::from_raw_parts(self.mmap_addr as *const MultibootMmapEntry, num_mmap_entries) }
+        let num_mmap_entries =
+            self.mmap_length as usize / core::mem::size_of::<MultibootMmapEntry>();
+        unsafe {
+            core::slice::from_raw_parts(
+                self.mmap_addr as *const MultibootMmapEntry,
+                num_mmap_entries,
+            )
+        }
     }
 }

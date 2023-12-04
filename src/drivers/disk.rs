@@ -1,4 +1,4 @@
-use crate::{print, println};
+use crate::{drivers::ata::DiskType, print, println};
 
 use super::ata::read_sectors_pio;
 
@@ -27,14 +27,14 @@ pub struct MbrPartition {
     pub sector_count: u32,
 }
 
-pub fn get_bytes(target_addr: &mut [u8], lba: u32, sector_count: u8) {
-    read_sectors_pio(target_addr, lba, sector_count)
+pub fn get_bytes(disk_type: DiskType, target_addr: &mut [u8], lba: u32, sector_count: u8) {
+    read_sectors_pio(disk_type, target_addr, lba, sector_count)
 }
 
-pub fn open_disk(partition: usize, out: *mut MbrPartition) {
+pub fn open_disk(disk_type: DiskType, partition: usize, out: *mut MbrPartition) {
     println!("[DIS] Reading sectors from MASTER disk");
     let arr: &mut [u8] = &mut [0; SECTOR_SIZE];
-    read_sectors_pio(arr, 0x0, 1);
+    read_sectors_pio(disk_type, arr, 0x0, 1);
     unsafe {
         let partition_info_offset = MBR_PARTITION_INDEXES[partition];
         *out = *(&arr[partition_info_offset] as *const u8 as *mut MbrPartition);

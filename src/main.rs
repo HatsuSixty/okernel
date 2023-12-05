@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+#![feature(panic_info_message)]
+
 extern crate alloc;
 
 mod allocator;
@@ -27,7 +29,15 @@ global_asm!(include_str!("boot.S"), options(att_syntax));
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("{info}");
+    if let Some(loc) = info.location() {
+        println!("{}:{}: KERNEL PANIC!", loc.file(), loc.line());
+    }
+    // uses feature `panic_info_message`
+    if let Some(msg) = info.message() {
+        println!("  => {msg}");
+    } else if let Some(payload) = info.payload().downcast_ref::<&'static str>() {
+        println!("  => {payload}");
+    }
     loop {}
 }
 

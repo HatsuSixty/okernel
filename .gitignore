@@ -2,4 +2,5 @@
 /Toolchain
 root/boot/okernel
 *.iso
+*.img
 *~

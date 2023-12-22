@@ -40,7 +40,9 @@ impl Disk {
         }
     }
 
-    pub fn get_mbr_partition(&self, partition: usize, out: *mut MbrPartition) {
+    pub fn get_mbr_partition(&self, partition: usize) -> MbrPartition {
+        let mut mbrpartition = MbrPartition::default();
+        let out = &mut mbrpartition as *mut MbrPartition;
         println!(
             "[DIS] Getting MBR partition from disk {:?} on controller {:?}",
             self.typ, self.controller
@@ -51,6 +53,7 @@ impl Disk {
             let partition_info_offset = MBR_PARTITION_INDEXES[partition];
             *out = *(&arr[partition_info_offset] as *const u8 as *mut MbrPartition);
         }
+        mbrpartition
     }
 
     pub fn get_bytes(&self, target_addr: &mut [u8], lba: u32, sector_count: u8) {

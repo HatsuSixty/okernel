@@ -1,6 +1,5 @@
 #![no_std]
 #![no_main]
-
 #![feature(panic_info_message)]
 
 extern crate alloc;
@@ -18,7 +17,7 @@ use crate::{
     allocator::ALLOC,
     drivers::{
         ata::{ControllerType, DiskType},
-        disk::{Disk, MbrPartition},
+        disk::Disk,
     },
     multiboot::MultibootInfo,
 };
@@ -51,9 +50,7 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
 
     let disk = Disk::new(DiskType::Master, ControllerType::Master);
 
-    let mut mbrpartition = MbrPartition::default();
-    disk.get_mbr_partition(0, &mut mbrpartition as *mut MbrPartition);
-
+    let mbrpartition = disk.get_mbr_partition(0);
     println!("MBR: {mbrpartition:?}\n");
 
     // This workaround is needed so the pointer `data` is correctly aligned

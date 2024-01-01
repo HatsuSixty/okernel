@@ -2,8 +2,6 @@
 #![no_main]
 #![feature(panic_info_message)]
 
-extern crate alloc;
-
 mod allocator;
 mod cpu;
 mod drivers;
@@ -51,7 +49,14 @@ pub extern "C" fn init(multiboot_magic: u32, info: &MultibootInfo) -> ! {
     let disk = Disk::new(DiskType::Master, ControllerType::Master);
 
     let mbrpartition = disk.get_mbr_partition(0);
-    println!("MBR: {mbrpartition:?}\n");
+    println!("MBR: {mbrpartition:?}");
+
+    if mbrpartition.typ == 0x0C {
+        println!("Partition is of type FAT32 (with LBA addressing)");
+    } else if mbrpartition.typ == 0x0B {
+        println!("Partition is of type FAT32 (with CHS addressing)");
+    }
+    println!();
 
     // This workaround is needed so the pointer `data` is correctly aligned
     let mut data_u16: [u16; 512 / core::mem::size_of::<u16>()] =
